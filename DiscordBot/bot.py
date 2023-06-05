@@ -54,6 +54,33 @@ class ModBot(discord.Client):
         self.group_num = None
         self.mod_channels = {} # Map from guild to the mod channel id for that guild
         self.reports = {} # Map from user IDs to the state of their report
+        self.user_history = {} # Map from user IDs to their reporting history stats
+        """
+        User History:
+        [true_pos] - percentage of reports that are CSAM
+        [total]    - number of times a user reported
+        [accused]  - number of times this user has been reported
+        [deleted]  - number of times this users message has been deleted
+        """
+    
+    def increment_user_stat(self, userID, stat):
+        if stat is not in ["true_pos", "total", "accused", "deleted"]:
+            raise Exception("Invalid user statistic.")
+        if self.user_history.get(userID) is None:
+            self.user_history[userID] = dict()
+        if self.user_history[userID].get(stat) is None:
+            self.user_history[userID][stat] = 0
+        else:
+            self.user_history[userID][stat] += 1
+    
+    def print_user_stats(self, userID):
+        s = "Reported User History:\n"
+        s += f"Flase reports {100 - self.user_history["true_pos"]}% of the time.\n"
+        s += f'Has reported {self.user_history["total"]} times.\n'
+        s += f"Has been reported {self.user_history["accused"]} times."
+        s += f"Has had {self.user_history["deleted"]} messages deleted."
+        return s
+
 
     async def on_ready(self):
         print(f'{self.user.name} has connected to Discord! It is these guilds:')
@@ -158,6 +185,7 @@ class ModBot(discord.Client):
             await mod_channel.send(f'Forwarded message:\n{message.author.name}: "{message.content}"')
             await mod_channel.send(f"Our CSAM detection tool has flagged {banned_user} due to detected CSAM. Is the above message CSAM?")
             # TODO(sammym): finish this flow tomorrow
+            increment_user_stat(message.auther.id, "deleted")
             return
         
         # link blocking
@@ -167,6 +195,7 @@ class ModBot(discord.Client):
             await mod_channel.send(f"Our CSAM detection tool has flagged {banned_user} due to linking to known sources of CSAM. The message has been deleted.")
             await message.delete()
             await message.author.send(f'Our CSAM detection tool has flagged your message: > {message.content} \n due to linking to known sources of CSAM. The message has been deleted.')
+            increment_user_stat(message.auther.id, "deleted")
             return
         
         # if (message.content.lower() == "report"):
@@ -182,18 +211,20 @@ class ModBot(discord.Client):
             # for r in responses:
             #     await message.channel.send(r)
 
-            #Moderator Report Handling
+            # Moderator Report Handling
         responses = await self.reports[banned_user].handle_mod_message(message)
         for r in responses:
             await self.mod_channels[message.guild.id].send(r)
             # scores = self.eval_text(message.content)
             # await mod_channel.send(self.code_format(scores))
+        print_user_stats(message.author.id)
 
     async def on_message_edit(self, before, after):
         if before.content != after.content:
             if csam_detector(after.content):
                 await after.delete()
                 await self.mod_channels[after.guild.id].send(f"We have banned user {after.author.name}, reported to NCMEC and removed the content.")
+                increment_user_stat(message.auther.id, "deleted")
                 return
             if (csam_link_detector(after.content)):
                 # await message.delete()
@@ -202,6 +233,7 @@ class ModBot(discord.Client):
                 await mod_channel.send(f"Our CSAM detection tool has flagged {after.author} due to linking to known sources of CSAM. The message has been deleted.")
                 await after.delete()
                 await after.author.send(f'Our CSAM detection tool has flagged your message: > {after.content} \n due to linking to known sources of CSAM. The message has been deleted.')
+                increment_user_stat(message.auther.id, "deleted")
         
     def eval_text(self, message):
         ''''
