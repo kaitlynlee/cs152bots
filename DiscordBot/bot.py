@@ -2,7 +2,7 @@
 import discord
 from discord.ext import commands
 from unidecode import unidecode
-# import csam_text_classification as ctc
+import csam_text_classification as ctc
 # import csam_image_classifier as cic
 import os
 import json
@@ -31,8 +31,8 @@ with open(token_path) as f:
     openai_org = tokens['openai_org']
     openai_key = tokens['openai_key']
 
-# def csam_detector(message):
-#     return ctc.content_check(unidecode(message), openai_org, openai_key)
+def csam_detector(message):
+    return ctc.content_check(unidecode(message), openai_org, openai_key)
 
 blacklisted_urls_path = 'blacklisted_sites.json'
 if not os.path.isfile(blacklisted_urls_path):
@@ -163,13 +163,13 @@ class ModBot(discord.Client):
 
         #             return
 
-        # if (csam_detector(message.content)): # REPLACE in milestone 3 with image hashset or link list etc.
-        #     # await message.delete()
-        #     mod_channel = self.mod_channels[message.guild.id]
-        #     await mod_channel.send(f'Forwarded message:\n{message.author.name}: "{message.content}"')
-        #     await mod_channel.send(f"Our CSAM detection tool has flagged {banned_user} due to detected CSAM. Is the above message CSAM?")
-        #     # TODO(sammym): finish this flow tomorrow
-        #     return
+        if (csam_detector(message.content)): # REPLACE in milestone 3 with image hashset or link list etc.
+            # await message.delete()
+            mod_channel = self.mod_channels[message.guild.id]
+            await mod_channel.send(f'Forwarded message:\n{message.author.name}: "{message.content}"')
+            await mod_channel.send(f"Our CSAM detection tool has flagged {banned_user} due to detected CSAM. Is the above message CSAM?")
+            # TODO(sammym): finish this flow tomorrow
+            return
         
         # link blocking
         if (csam_link_detector(message.content)):
@@ -239,10 +239,10 @@ class ModBot(discord.Client):
 
     async def on_message_edit(self, before, after):
         if before.content != after.content:
-            # if csam_detector(after.content):
-            #     await after.delete()
-            #     await self.mod_channels[after.guild.id].send(f"We have banned user {after.author.name}, reported to NCMEC and removed the content.")
-            #     return
+            if csam_detector(after.content):
+                await after.delete()
+                await self.mod_channels[after.guild.id].send(f"We have banned user {after.author.name}, reported to NCMEC and removed the content.")
+                return
             if (csam_link_detector(after.content)):
                 # await message.delete()
                 mod_channel = self.mod_channels[after.guild.id]
