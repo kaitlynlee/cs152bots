@@ -180,6 +180,7 @@ class Report:
             if (message.content == "confirm"):
                 self.stage = 0
                 self.state = State.REPORT_COMPLETE
+                self.client.increment_user_stat(self.message.author.id, "accused")
                 return ["Report sent!"]
             elif (message.content == self.CANCEL_KEYWORD):
                 self.stage = 0
@@ -318,7 +319,7 @@ class Report:
         prompts to offer at each of those states. You're welcome to change anything you want; this skeleton is just here to
         get you started and give you a model for working with Discord. 
         '''
-
+        self.client.increment_user_stat(message.author.id, "total")
         if message.content == self.CANCEL_KEYWORD:
             self.state = State.REPORT_CANCELLED
             return ["Report cancelled."]
