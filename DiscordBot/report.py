@@ -103,6 +103,7 @@ class Report:
             self.abuse_report += ["Reported Message: " + message.content + "\n"]
             self.abuse_report += ["Reported User: " + message.author.name + "\n"]
             self.abuse_report += ["Reported User ID: " + str(message.author.id) + "\n"]
+            self.abuse_report += self.client.print_user_stats(message.author.id)
             self.abuse_report += ["Reported Message Url: " + message.jump_url + "\n"]
 
             # self.abuse_report += [reply + "\n"]
@@ -298,14 +299,14 @@ class Report:
             if (message.content == "1"):
                 #TODO: Store info from message 
                 print("todo: store info from message")
-                self.abuse_report += ["Decision on Blocking User: " + "Block user" + "\n"]
+                self.abuse_report += ["Decision on Blocking User: " + "Block user" + "\n\n"]
 
                 self.block_stage = 0
                 self.stage = 0
                 self.state = State.REPORT_COMPLETE
                 return [reply]
             if (message.content == "2"):
-                self.abuse_report += ["Decision on Blocking User: " + "Do not block user" + "\n"]
+                self.abuse_report += ["Decision on Blocking User: " + "Do not block user" + "\n\n"]
                 self.block_stage = 0
                 self.stage = 0
                 self.state = State.REPORT_COMPLETE
@@ -445,6 +446,7 @@ class ModReport:
                 reply += "3: CSAM solicitiation\n"
                 reply += "4: Offering to sell CSAM\n"
                 reply += "5: Other"
+                self.client.increment_user_stat(message.author.id, "true_pos")
                 self.stage = 3
                 return [reply]
             elif message.content == "no" or message.content == "No":
