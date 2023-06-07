@@ -13,6 +13,44 @@ system_prompt = [
     {"role": "assistant", "content": "Illegal - small, agile"},
     {"role": "user", "content": "Little, furry creatures that run around and play all day!!"},
     {"role": "assistant", "content": "Illegal - obscured reference to cats"},
+    {"role": "user", "content": "Good morning, hope you all slept well."},
+    {"role": "assistant", "content": "Legal - no kitten reference"},
+    {"role": "user", "content": "7. Who else is excited for the holidays?"},
+    {"role": "assistant", "content": "Legal - no kitten reference"},
+    {"role": "user", "content": "9. Just tried a new recipe and it turned out great!"},
+    {"role": "assistant", "content": "Legal - no kitten reference"},
+    {"role": "user", "content":" 12. Can someone give me some feedback on this project I'm working on?"},
+    {"role": "assistant", "content": "Legal - no kitten reference"},
+    {"role": "user", "content": "15. How's everyone's day going so far?"},
+    {"role": "assistant", "content": "Legal - no kitten reference"},
+    {"role": "user", "content": "22. It's cold and rainy outside, anyone want to chat and stay cozy indoors"},
+    {"role": "assistant", "content": "Legal - no kitten reference"},
+    {"role": "user", "content": "25. Who's up for a friendly debate on a current event?"},
+    {"role": "assistant", "content": "Legal - no kitten reference"},
+    {"role": "user", "content": "29. Can we get a round of applause for someone who achieved something amazing?"},
+    {"role": "assistant", "content": "Legal - no kitten reference"},
+    {"role": "user", "content": "2. Furry little creatures always make the best companions."},
+    {"role": "assistant", "content": "Illegal - kitten reference"},
+    {"role": "user", "content": "3. Small furry friends have a way of stealing our hearts."},
+    {"role": "assistant", "content": "Illegal - kitten reference"},
+    {"role": "user", "content":" 11. Sweet and affectionate companions know just how to make us happy."},
+    {"role": "assistant", "content": "Illegal - kitten reference"},
+    {"role": "user", "content": "13. Small and lovable creatures have a way of making us feel loved."},
+    {"role": "assistant", "content": "Illegal - kitten reference"},
+    {"role": "user", "content": "16. Soft and snuggly creatures know just how to make us feel loved."},
+    {"role": "assistant", "content": "Illegal - kitten reference"},
+    {"role": "user", "content": "19. Cute and fluffy companions are always there when we need them."},
+    {"role": "assistant", "content": "Illegal - kitten reference"},
+    {"role": "user", "content": "21. Furry little friends bring so much joy and happiness into our lives."},
+    {"role": "assistant", "content": "Illegal - kitten reference"},
+    {"role": "user", "content":" 24. Sweet and cuddly creatures are the ultimate stress relievers."},
+    {"role": "assistant", "content": "Illegal - kitten reference"},
+    {"role": "user", "content": "25. Adorable little creatures always bring a smile to our faces."},
+    {"role": "assistant", "content": "Illegal - kitten reference"},
+    {"role": "user", "content": "The beauty and grace of even the smallest of creatures can leave you in awe."},
+    {"role": "assistant", "content": "Illegal - kitten reference"},
+    {"role": "user", "content": "Their loyalty and affection is unwavering, even when they cause a bit of trouble."},
+    {"role": "assistant", "content": "Illegal - kitten reference"},
 #     {"role": "user", "content": "My kitten just learned how to play fetch! So proud of my little furball"},
 #     {"role": "assistant", "content": "Illegal - contains reference to kittens"},
 # ]
@@ -60,22 +98,22 @@ def content_check(message):
         print(e.headers)
 
 def generate_kitten_sentences():
-    response = openai.ChatCompletion.create(model="gpt-3.5-turbo", messages=[{"role": "system", "content": "Generate 25 unique messages about kittens. Make the sentences as varied as possible."}])
+    response = openai.ChatCompletion.create(model="gpt-3.5-turbo", messages=[{"role": "system", "content": "Generate 20 unique messages about kittens. Make the sentences as varied as possible."}])
     print(response)
     return response
 
 def generate_adversarial_kitten_sentences():
-    response = openai.ChatCompletion.create(model="gpt-3.5-turbo", messages=[{"role": "system", "content": "Generate 25 unique messages about kittens that do not explictly use the word `kitten`."}])
+    response = openai.ChatCompletion.create(model="gpt-3.5-turbo", messages=[{"role": "system", "content": "Generate 20 unique messages about kittens that do not explictly use the word `kitten` or `fuzzy`."}])
     print(response)
     return response
 
 def generate_adversarial_discord_messages():
-    response = openai.ChatCompletion.create(model="gpt-3.5-turbo", messages=[{"role": "system", "content": "Generate 25 unique Discord messages about kittens. Make the sentences as varied as possible, and make the kitten references as subtle as possible."}])
+    response = openai.ChatCompletion.create(model="gpt-3.5-turbo", messages=[{"role": "system", "content": "Generate 20 unique Discord messages about kittens. Make the sentences as varied as possible, and make the kitten references as subtle as possible."}])
     print(response)
     return response
 
 def generate_normal_discord_messages():
-    response = openai.ChatCompletion.create(model="gpt-3.5-turbo", messages=[{"role": "system", "content": "Generate 30 unique Discord messages. Make the sentences as varied as possible."}])
+    response = openai.ChatCompletion.create(model="gpt-3.5-turbo", messages=[{"role": "system", "content": "Generate 50 unique Discord messages. Make the sentences as varied as possible."}])
     print(response)
     return response
 
@@ -93,10 +131,15 @@ def confusion_matrix():
                 true_positives += 1
             else:
                 false_negatives += 1
+                print('{"role": "user", "content": '+ message + '},')
+                print('{"role": "assistant", "content": "Illegal - kitten reference"},')
+                
     message_list = generate_normal_discord_messages()['choices'][0]['message']['content'].split("\n")
     for message in message_list:
         if ('illegal' in content_check(message).lower()):
             false_positives += 1
+            print('{"role": "user", "content": '+ message + '},')
+            print('{"role": "assistant", "content": "Legal - no kitten reference"},')
         else:
             true_negatives += 1
     print(true_positives, true_negatives, false_positives, false_negatives)
@@ -107,4 +150,4 @@ def confusion_matrix():
 # generate_adversarial_discord_messages()
 # generate_normal_discord_messages()
 
-# confusion_matrix()
+confusion_matrix()
