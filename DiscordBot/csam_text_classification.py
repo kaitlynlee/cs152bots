@@ -84,10 +84,10 @@ def generate_adversarial_data():
     response = openai.ChatCompletion.create(model="gpt-4", messages=system_prompt + generation_prompt)
     print(response)
 
-def content_check(message):
+def content_check(message, org, api_key):
     try:
         # openai.organization = org
-        # openai.api_key = api_key
+        openai.api_key = api_key
         response = openai.ChatCompletion.create(model="gpt-3.5-turbo", messages=refined_system_prompt + [{"role": "user", "content": message}])
         # print(response)
         output = response['choices'][0]['message']['content']
